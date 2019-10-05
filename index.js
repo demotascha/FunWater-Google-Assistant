@@ -57,7 +57,7 @@ app.intent("user_info", (conv, params, permissionGranted) => {
                   fountain["_geoloc"]["lng"]
                   }`;
                 let display_name =
-                  fountain["place_name"] + " " + fountain["place"];
+                  fountain["place_name_en"] + " " + fountain["place_en"];
                 console.log("[FountainInfo]: " + fountain_latlng);
 
                 googleMapsClient.distanceMatrix(
@@ -80,7 +80,7 @@ app.intent("user_info", (conv, params, permissionGranted) => {
                           text: `${info}  \nLatest update: ${
                             fountain["updated_time"]
                             }`,
-                          subtitle: fountain["place_name"],
+                          subtitle: fountain["place_name_en"],
                           title: `${display_name}`,
                           buttons: new Button({
                             title: `Go to Google Map`,
