@@ -17,11 +17,11 @@ const googleMapsClient = gmaps.createClient({
 });
 const directionRoute = "https://www.google.com/maps/dir/?api=1&travelmode=walking";
 
-app.intent("CanGetWater", conv => {
+app.intent("can_get_drinking_fountain", conv => {
   conv.data.requestedPermission = "DEVICE_PRECISE_LOCATION";
   return conv.ask(
     new Permission({
-      context: "要抓取您的位置",
+      context: "May I have your location?",
       permissions: conv.data.requestedPermission
     })
   );
@@ -38,7 +38,7 @@ app.intent("user_info", (conv, params, permissionGranted) => {
         let lng = coordinates.longitude;
         let user_latlng = `${lat},${lng}`;
         console.log("[UserInfo]: " + user_latlng);
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           index
             .search({
               query: "",
@@ -49,13 +49,13 @@ app.intent("user_info", (conv, params, permissionGranted) => {
             .then(res => {
               console.log("[Algolia][200]: " + JSON.stringify(res));
               if (res["hits"].length < 1) {
-                conv.close(`對不起，目前不支援此地點`);
+                conv.close(`Sorry, Taipei City only`);
                 resolve();
               } else {
                 let fountain = res["hits"][0];
                 let fountain_latlng = `${fountain["_geoloc"]["lat"]},${
                   fountain["_geoloc"]["lng"]
-                }`;
+                  }`;
                 let display_name =
                   fountain["place_name"] + " " + fountain["place"];
                 console.log("[FountainInfo]: " + fountain_latlng);
@@ -65,25 +65,25 @@ app.intent("user_info", (conv, params, permissionGranted) => {
                     origins: user_latlng,
                     destinations: fountain_latlng,
                     mode: "walking",
-                    language: "zh-tw"
+                    language: "en-us"
                   },
-                  function(err, response) {
+                  function (err, response) {
                     if (!err) {
-                      response.json.rows.map(function(destination) {
+                      response.json.rows.map(function (destination) {
                         let distance = destination.elements[0].distance.text;
                         let duration = destination.elements[0].duration.text;
-                        let result = `離你最近的飲水機是在 ${display_name}  \n`;
-                        let info = `距離: ${distance}  \n步行時間: ${duration}  \n`;
+                        let result = `The closest drinking fountain is ${display_name}  \n`;
+                        let info = `Distance: ${distance}  \nDuration: ${duration}  \n`;
                         console.log(result + info);
                         conv.ask(result + info);
                         let basicCard = new BasicCard({
-                          text: `${info}  \n資料最後更新時間: ${
+                          text: `${info}  \nLatest update: ${
                             fountain["updated_time"]
-                          }`,
+                            }`,
                           subtitle: fountain["place_name"],
                           title: `${display_name}`,
                           buttons: new Button({
-                            title: `點我到 Google Map`,
+                            title: `Go to Google Map`,
                             url: `${directionRoute}&origin=${user_latlng}&destination=${fountain_latlng}`
                           }),
                           image: new Image({
@@ -94,7 +94,7 @@ app.intent("user_info", (conv, params, permissionGranted) => {
                         });
                         console.log(basicCard);
                         conv.ask(basicCard);
-                        conv.close("謝謝，希望下次能再次為您服務");
+                        conv.close("Thank you. See you next time.");
                         resolve();
                       });
                     }
@@ -104,11 +104,11 @@ app.intent("user_info", (conv, params, permissionGranted) => {
             });
         });
       } else {
-        return conv.close("對不起，目前 GPS 沒辦法定位");
+        return conv.close("Sorry, It's unavailable to get your location.");
       }
     }
   } else {
-    return conv.close("對不起，授權失敗。請重新呼叫，然後再次授權");
+    return conv.close("Soory, Permission denied.");
   }
 });
 
